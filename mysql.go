@@ -14,13 +14,17 @@ type mysql struct {
 }
 
 // newMySQL returns new MySQL tester.
-func newMySQL(dialect, user, pass, host, schema string) Tester {
+func newMySQL(dialect, user, pass, host, schema string) DB {
     dsn := fmt.Sprintf("%s:%s@(%s)/%s?charset=utf8", user, pass, host, schema)
     db, err := sql.Open(dialect, dsn)
     if err != nil {
         panic(err)
     }
     return &mysql{schema: schema, DB: db}
+}
+
+func (m *mysql) Must() DBMust {
+    return &must{m}
 }
 
 func (m *mysql) Tables() ([]string, error) {
@@ -40,12 +44,6 @@ func (m *mysql) Tables() ([]string, error) {
     return ts, nil
 }
 
-func (m *mysql) TablesMust() []string {
-    ts, err := m.Tables()
-    checkErrOrPanic(err)
-    return ts
-}
-
 func (m *mysql) TableExists(name string) (bool, error) {
     ts, err := m.Tables()
     if err != nil {
@@ -57,12 +55,6 @@ func (m *mysql) TableExists(name string) (bool, error) {
         }
     }
     return false, nil
-}
-
-func (m *mysql) TableExistsMust(name string) bool {
-    e, err := m.TableExists(name)
-    checkErrOrPanic(err)
-    return e
 }
 
 func (m *mysql) TableTruncate(name string) error {
@@ -99,12 +91,6 @@ func (m *mysql) RowExists(tableName string, pkName string, pkValue interface{}) 
     return count == 1, err
 }
 
-func (m *mysql) RowExistsMust(tableName, pkName string, pkValue interface{}) bool {
-    e, err := m.RowExists(tableName, pkName, pkValue)
-    checkErrOrPanic(err)
-    return e
-}
-
 func (m *mysql) RowCount(tableName string) (int, error) {
     var count int
     query := fmt.Sprintf("SELECT COUNT(*) FROM `%s`", tableName)
@@ -113,15 +99,3 @@ func (m *mysql) RowCount(tableName string) (int, error) {
     return count, err
 }
 
-func (m *mysql) RowCountMust(tableName string) int {
-    c, err := m.RowCount(tableName)
-    checkErrOrPanic(err)
-    return c
-}
-
-// checkErrOrPanic panics if error is not nil.
-func checkErrOrPanic(err error) {
-    if err != nil {
-        panic(err)
-    }
-}

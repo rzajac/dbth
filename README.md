@@ -1,3 +1,3 @@
 ## Database Test Helper
 
-Provides helper methods for testing MySQL database.
+Provides helper methods for MySQL integration tests.

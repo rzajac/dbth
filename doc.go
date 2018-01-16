@@ -1,2 +1,2 @@
-// Package dbth provides helper methods for testing databases.
+// Package dbth helper methods for MySQL integration tests.
 package dbth
